@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Car Racing Game</title>
+  <style>
+    body { margin: 0; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+
+<!-- Include the Three.js library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/js/loaders/GLTFLoader.js"></script>
+
+<script>
+  // Set up the scene, camera, and renderer
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+
+  // Set up the road and environment
+  const roadWidth = 10;
+  const roadLength = 100;
+  
+  const roadGeometry = new THREE.BoxGeometry(roadWidth, 0.1, roadLength);
+  const roadMaterial = new THREE.MeshBasicMaterial({ color: 0x808080 });
+  const road = new THREE.Mesh(roadGeometry, roadMaterial);
+  road.position.set(0, -0.05, -roadLength / 2);
+  scene.add(road);
+
+  // Add center line
+  const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 });
+  const lineGeometry = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(-roadWidth / 2, 0.1, 0),
+    new THREE.Vector3(roadWidth / 2, 0.1, 0)
+  ]);
+  const line = new THREE.Line(lineGeometry, lineMaterial);
+  scene.add(line);
+
+  // Add red and white edge stripes
+  const stripeMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+  const stripeGeometry = new THREE.BoxGeometry(0.5, 0.1, roadLength);
+  const stripe1 = new THREE.Mesh(stripeGeometry, stripeMaterial);
+  stripe1.position.set(-roadWidth / 2 - 0.25, 0.05, -roadLength / 2);
+  scene.add(stripe1);
+  
+  const stripe2 = new THREE.Mesh(stripeGeometry, stripeMaterial);
+  stripe2.position.set(roadWidth / 2 + 0.25, 0.05, -roadLength / 2);
+  scene.add(stripe2);
+
+  // Add buildings on the sides
+  const buildingGeometry = new THREE.BoxGeometry(5, 10, 5);
+  const buildingMaterial = new THREE.MeshBasicMaterial({ color: 0xcccccc });
+  
+  const building1 = new THREE.Mesh(buildingGeometry, buildingMaterial);
+  building1.position.set(-10, 5, -roadLength / 2);
+  scene.add(building1);
+  
+  const building2 = new THREE.Mesh(buildingGeometry, buildingMaterial);
+  building2.position.set(10, 5, -roadLength / 2);
+  scene.add(building2);
+
+  // Add street lights
+  const lightPoleGeometry = new THREE.CylinderGeometry(0.1, 0.1, 10);
+  const lightPoleMaterial = new THREE.MeshBasicMaterial({ color: 0xaaaaaa });
+  const lightPole1 = new THREE.Mesh(lightPoleGeometry, lightPoleMaterial);
+  lightPole1.position.set(-5, 5, -roadLength / 4);
+  scene.add(lightPole1);
+
+  const lightPole2 = new THREE.Mesh(lightPoleGeometry, lightPoleMaterial);
+  lightPole2.position.set(5, 5, -roadLength / 4);
+  scene.add(lightPole2);
+
+  // Add traffic lights (basic version)
+  const trafficLightGeometry = new THREE.BoxGeometry(0.5, 0.5, 1);
+  const trafficLightMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+  const trafficLight1 = new THREE.Mesh(trafficLightGeometry, trafficLightMaterial);
+  trafficLight1.position.set(-5, 8, -roadLength / 4);
+  scene.add(trafficLight1);
+
+  const trafficLight2 = new THREE.Mesh(trafficLightGeometry, trafficLightMaterial);
+  trafficLight2.position.set(5, 8, -roadLength / 4);
+  scene.add(trafficLight2);
+
+  // Load 3D car model (using GLTFLoader)
+  const loader = new THREE.GLTFLoader();
+  let car;
+
+  loader.load('https://threejs.org/examples/models/gltf/car/scene.gltf', (gltf) => {
+    car = gltf.scene;
+    car.scale.set(0.5, 0.5, 0.5);  // Scale down the car
+    car.position.set(0, 0, 0);
+    scene.add(car);
+  }, undefined, (error) => {
+    console.error(error);
+  });
+
+  // Set up the camera position
+  camera.position.z = 15;
+
+  // Set up controls
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+  // Game loop to animate the scene
+  function animate() {
+    requestAnimationFrame(animate);
+    if (car) {
+      car.rotation.y += 0.01; // Rotate car
+    }
+    renderer.render(scene, camera);
+  }
+
+  animate();
+
+  // Resize the renderer when the window is resized
+  window.addEventListener('resize', () => {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+  });
+</script>
+</body>
+</html>
